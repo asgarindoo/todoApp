@@ -97,6 +97,9 @@ export default {
     }
   },
   methods: {
+    logout() {
+
+    },
     addTodo(todo) {
       this.todos.push({
         id: this.nextId++,

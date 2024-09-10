@@ -5,19 +5,19 @@
       <form @submit.prevent="register" class="mb-4">
         <input
           type="text"
-          v-model="name"
+          v-model="user.name"
           placeholder="Name"
           class="border border-gray-300 rounded-md px-3 py-2 w-full mb-2 focus:outline-none focus:ring focus:border-slate-800"
         />
         <input
           type="text"
-          v-model="email"
-          placeholder="Email"
+          v-model="user.username"
+          placeholder="Username"
           class="border border-gray-300 rounded-md px-3 py-2 w-full mb-2 focus:outline-none focus:ring focus:border-slate-800"
         />
         <input
           type="password"
-          v-model="password"
+          v-model="user.password"
           placeholder="Password"
           class="border border-gray-300 rounded-md px-3 py-2 w-full mb-2 focus:outline-none focus:ring focus:border-slate-800"
         />
@@ -51,23 +51,33 @@
 </template>
 
 <script>
+import AuthService from '../services/auth.service.js'
+
 export default {
   name: 'RegisterView',
   data() {
     return {
-      name: '',
-      email: '',
-      password: '',
+      user: {
+        name: '',
+        username: '',
+        password: ''
+      },
       confirmPassword: ''
     }
   },
   methods: {
-    register() {
-      if (this.password !== this.confirmPassword) {
-        alert('Passwords do not match!')
-        return
+    async register() {
+      try {
+        await AuthService.register(this.user)
+        this.$router.push('/')
+      } catch (error) {
+        this.errorMessage =
+          (error.response && error.response.data && error.response.data.message) ||
+          error.message ||
+          error.toString()
+      } finally {
+        this.loading = false
       }
-      // Implement registration logic here
     },
     registerWithGoogle() {
       // Implement Google sign-up logic here

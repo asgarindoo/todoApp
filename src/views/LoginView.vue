@@ -2,16 +2,16 @@
   <div class="h-screen font-quicksand animate__animated animate__fadeInDown">
     <div class="max-w-md mx-auto p-4 mt-36">
       <h2 class="text-2xl font-bold mb-4">Login or Sign Up</h2>
-      <form @submit.prevent="loginOrSignUp" class="mb-4">
+      <form @submit.prevent="login" class="mb-4">
         <input
           type="text"
-          v-model="email"
+          v-model="user.username"
           placeholder="Email"
           class="border border-gray-300 rounded-md px-3 py-2 w-full mb-2 focus:outline-none focus:ring focus:border-slate-800"
         />
         <input
           type="password"
-          v-model="password"
+          v-model="user.password"
           placeholder="Password"
           class="border border-gray-300 rounded-md px-3 py-2 w-full mb-2 focus:outline-none focus:ring focus:border-slate-800"
         />
@@ -24,7 +24,7 @@
       </form>
       <p class="mb-4">
         Don't have an account?
-        <router-link to="/register" class="text-blue-900">Sign Up</router-link>
+        <router-link to="/login" class="text-blue-900">Sign Up</router-link>
       </p>
       <hr class="mb-4" />
       <p class="mb-2">Login with Google:</p>
@@ -39,15 +39,33 @@
 </template>
 
 <script>
+import AuthService from '../services/auth.service.js'
+
 export default {
   name: 'LoginView',
   data() {
     return {
-      email: '',
-      password: ''
+      user: {
+        email: '',
+        password: ''
+      }
     }
   },
-  methods: {}
+  methods: {
+    async login() {
+      try {
+        await AuthService.login(this.user)
+        this.$router.push('/home')
+      } catch (error) {
+        this.errorMessage =
+          (error.response && error.response.data && error.response.data.message) ||
+          error.message ||
+          error.toString()
+      } finally {
+        this.loading = false
+      }
+    }
+  }
 }
 </script>
 

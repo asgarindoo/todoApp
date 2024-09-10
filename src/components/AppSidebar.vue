@@ -1,3 +1,4 @@
+import AuthService from '@/service/auth.service';
 <template>
   <aside :class="['sidebar', { 'sidebar-open': isOpen }]">
     <div class="flex items-center p-4">
@@ -39,14 +40,14 @@
           </router-link>
         </li>
         <li>
-          <router-link
-            to="/"
+          <a
+            @click.prevent="logout"
             class="flex items-center px-4 py-2 mt-96 hover:bg-gray-700"
             active-class="bg-gray-700"
           >
             <i class="fas fa-sign-out-alt mr-4 ml-6"></i>
             <span class="sidebar-text">Logout</span>
-          </router-link>
+          </a>
         </li>
       </ul>
     </nav>
@@ -54,6 +55,8 @@
 </template>
 
 <script>
+import AuthService from '../services/auth.service.js'
+
 export default {
   name: 'AppSidebar',
   data() {
@@ -62,6 +65,10 @@ export default {
     }
   },
   methods: {
+    async logout() {
+      await AuthService.logout()
+      this.$router.push('/')
+    },
     toggleSidebar() {
       this.isOpen = !this.isOpen
     }
