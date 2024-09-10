@@ -52,9 +52,11 @@
 </template>
 
 <script>
+import axios from 'axios'
 import TodoForm from '../components/TodoForm.vue'
 import TodoCard from '../components/TodoCard.vue'
 import ModalDetail from '../components/ModalDetail.vue'
+import Cookies from 'js-cookie'
 
 export default {
   components: {
@@ -64,22 +66,8 @@ export default {
   },
   data() {
     return {
-      todos: [
-        {
-          id: 1,
-          title: 'Sample Todo 1',
-          detail: 'Detail of Todo 1',
-          createdAt: new Date().toLocaleDateString()
-        },
-        {
-          id: 2,
-          title: 'Sample Todo 2',
-          detail: 'Detail of Todo 2',
-          createdAt: new Date().toLocaleDateString()
-        }
-        // Tambahkan lebih banyak data untuk pengujian pagination
-      ],
-      nextId: 3,
+      todos: [],
+      nextId: 1, // Start with 1 or adjust as needed
       selectedTodo: null,
       isModalOpen: false,
       currentPage: 1,
@@ -97,9 +85,40 @@ export default {
     }
   },
   methods: {
-    logout() {
+    async fetchTodos() {
+      try {
+        const token = Cookies.get('token')
+        if (!token) {
+          throw new Error('No token found')
+        }
 
+        console.log('Fetching todos with token:', token) // Debugging log
+
+        const response = await axios.get('https://pp5xdpnc-3500.asse.devtunnels.ms/api/todo', {
+          headers: {
+            Authorization: `Bearer ${token}` // Perbaiki format Authorization
+          },
+          withCredentials: true // Pastikan kredensial dikirim jika diperlukan
+        })
+
+        console.log('Response Data:', response.data) // Debugging log
+
+        this.todos = response.data.data
+      } catch (error) {
+        console.error('Error fetching data:', error)
+
+        if (error.response) {
+          console.error('Response data:', error.response.data)
+          console.error('Response status:', error.response.status)
+          console.error('Response headers:', error.response.headers)
+        } else if (error.request) {
+          console.error('Request data:', error.request)
+        } else {
+          console.error('Error message:', error.message)
+        }
+      }
     },
+
     addTodo(todo) {
       this.todos.push({
         id: this.nextId++,
@@ -126,6 +145,9 @@ export default {
         this.currentPage++
       }
     }
+  },
+  mounted() {
+    this.fetchTodos()
   }
 }
 </script>
