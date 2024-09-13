@@ -1,7 +1,5 @@
-import axios from 'axios'
+import { baseApi } from '@/plugins/axios'
 import Cookies from 'js-cookie'
-
-const API_URL = 'https://pp5xdpnc-3500.asse.devtunnels.ms/auth/'
 
 class AuthService {
   constructor() {
@@ -9,46 +7,26 @@ class AuthService {
   }
 
   init() {
-    axios.interceptors.request.use(
-      (config) => {
-        const token = Cookies.get('token')
-        if (token) {
-          config.headers.Authorization = `Bearer ${token}`
-        }
-        return config
-      },
-      (error) => {
-        return Promise.reject(error)
-      }
-    )
-
-    axios.interceptors.response.use(
-      (response) => {
-        return response
-      },
-      (error) => {
-        if (error.response && error.response.status === 401) {
-          this.logout()
-        }
-        return Promise.reject(error)
-      }
-    )
+    // baseApi.interceptors.request.use dan baseApi.interceptors.response.use sudah diatur di plugin axios
   }
 
   login(user) {
-    return axios
-      .post(API_URL + 'login', {
+    return baseApi
+      .post('/auth/login', {
         username: user.username,
         password: user.password
       })
       .then((response) => {
-        const { token, expiresAt } = response.data.data
-        if (token) {
-          Cookies.set('user', response.data.data)
+        console.log('Login Response:', response.data) // Log respons untuk debugging
+        const { token, expiresAt } = response.data // Mengakses data langsung dari response.data
+        if (token && expiresAt) {
+          Cookies.set('user', JSON.stringify({ token, expiresAt }))
           Cookies.set('token', token, { expires: new Date(expiresAt) })
+          return { token, expiresAt } // Kembalikan token dan expiresAt
+        } else {
+          console.error('Token atau expiresAt tidak tersedia dalam data')
+          throw new Error('Token atau expiresAt tidak tersedia dalam data')
         }
-        console.log('Login Response:', response.data)
-        return response.data
       })
       .catch((error) => {
         console.error('Login Error:', error)
@@ -59,18 +37,18 @@ class AuthService {
   logout() {
     Cookies.remove('user')
     Cookies.remove('token')
-    console.log('logout success')
+    console.log('Logout success')
   }
 
   register(user) {
-    return axios
-      .post(API_URL + 'register', {
+    return baseApi
+      .post('/auth/register', {
         name: user.name,
         username: user.username,
         password: user.password
       })
       .then((response) => {
-        console.log('Registration Response:', response.data)
+        console.log('Registration Response:', response.data) // Log respons untuk debugging
         return response.data
       })
       .catch((error) => {
