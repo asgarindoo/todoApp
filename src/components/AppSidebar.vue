@@ -55,7 +55,7 @@ import AuthService from '@/service/auth.service';
 </template>
 
 <script>
-import AuthService from '../services/auth.service.js'
+import { useAuthStore } from '../stores/authStore.js'
 
 export default {
   name: 'AppSidebar',
@@ -66,7 +66,7 @@ export default {
   },
   methods: {
     async logout() {
-      await AuthService.logout()
+      await useAuthStore.logout()
       this.$router.push('/')
     },
     toggleSidebar() {
@@ -79,7 +79,7 @@ export default {
 <style scoped>
 .sidebar {
   width: 64px;
-  height: 100vh;
+  height: 100%;
   background-color: #2d2d2d;
   color: white;
   overflow: hidden;

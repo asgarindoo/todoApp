@@ -1,21 +1,26 @@
 <template>
-  <div class="card">
-    <div class="actions">
-      <button @click="editTodo" class="btn btn-edit">
+  <div class="relative border border-gray-300 rounded-lg p-4 bg-white shadow-sm overflow-hidden">
+    <div class="flex ml-[77%] mb-2 space-x-2">
+      <button @click="editModal" class="ml-4 text-gray-700 hover:text-gray-800">
         <i class="fas fa-edit"></i>
       </button>
-      <button @click="deleteTodo" class="btn btn-delete">
+      <button @click="deleteTodo" class="text-gray-700 hover:text-gray-800">
         <i class="fas fa-trash-alt"></i>
       </button>
+      <button @click="showModal(todo)" class="text-gray-700 hover:text-gray-800">
+        <i class="fas fa-info-circle"></i>
+      </button>
     </div>
-    <div class="content-card">
+    <div class="pr-10">
+      <!-- Sesuaikan padding untuk menghindari overlap dengan tombol -->
       <h3 class="text-xl font-semibold mb-2">{{ todo.title }}</h3>
-      <p class="text-gray-600 mb-2">{{ todo.detail }}</p>
-      <p class="text-gray-500 text-sm mb-4">Created on: {{ todo.createdAt }}</p>
-    </div>
-    <div>
-      <input type="checkbox" class="form-checkbox h-4 w-4 mt-3 rounded" />
-      <label for="completed" class="ml-2 mt-4 text-gray-700">Completed</label>
+      <p class="text-gray-600 mb-2 line-clamp-3">{{ todo.description }}</p>
+      <p class="text-gray-500 text-sm mb-4">{{ formattedDate(todo.createdAt) }}</p>
+      <div class="mt-2">
+        <p class="inline-block bg-gray-100 text-gray-700 rounded px-2 py-1 text-xs">
+          {{ todo.category || 'No Category' }}
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -26,54 +31,26 @@ export default {
     todo: Object
   },
   methods: {
-    editTodo() {
-      const title = prompt('Enter new title', this.todo.title)
-      if (title) {
-        this.$emit('edit', { id: this.todo.id, title })
-      }
+    editModal() {
+      this.$emit('edit-modal', this.todo)
     },
     deleteTodo() {
       this.$emit('delete', this.todo.id)
+    },
+    showModal(todo) {
+      this.$emit('show-modal', todo)
+    },
+    formattedDate(dateString) {
+      if (!dateString) return 'No Date'
+      const options = {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      }
+      return new Date(dateString).toLocaleDateString(undefined, options)
     }
   }
 }
 </script>
-
-<style scoped>
-.card {
-  position: relative;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 16px;
-  background-color: #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.content-card {
-  padding-right: 40px; /* Adjust this padding to fit your button size */
-}
-
-.actions {
-  position: absolute;
-  top: 16px;
-  right: 16px;
-  display: flex;
-  gap: 8px;
-}
-
-.btn {
-  padding: 8px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 16px;
-}
-
-.btn-edit {
-  color: #353535;
-}
-
-.btn-delete {
-  color: #353535;
-}
-</style>

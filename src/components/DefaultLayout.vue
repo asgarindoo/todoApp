@@ -1,7 +1,9 @@
 <template>
   <div class="flex">
-    <AppSidebar />
-    <div class="flex-1 p-6">
+    <div class="fixed left-0 top-0 bottom-0 w-64">
+      <AppSidebar />
+    </div>
+    <div class="flex-1 ml-64 p-6">
       <router-view />
     </div>
   </div>
@@ -15,4 +17,11 @@ export default {
 }
 </script>
 
-<style scoped></style>
+<style scoped>
+.fixed {
+  position: fixed;
+}
+.ml-64 {
+  margin-left: 16rem; /* Sesuaikan dengan lebar sidebar-mu */
+}
+</style>
