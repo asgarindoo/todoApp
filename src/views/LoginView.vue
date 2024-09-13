@@ -1,7 +1,7 @@
 <template>
   <div class="h-screen font-quicksand animate__animated animate__fadeInDown">
     <div class="max-w-md mx-auto p-4 mt-36">
-      <h2 class="text-2xl font-bold mb-4">Login or Sign Up</h2>
+      <h2 class="text-2xl font-bold mb-4">Login or Sign In</h2>
       <form @submit.prevent="login" class="mb-4">
         <input
           type="text"
@@ -24,7 +24,7 @@
       </form>
       <p class="mb-4">
         Don't have an account?
-        <router-link to="/login" class="text-blue-900">Sign Up</router-link>
+        <router-link to="/Register" class="text-blue-900">Sign Up</router-link>
       </p>
       <hr class="mb-4" />
       <p class="mb-2">Login with Google:</p>
@@ -39,23 +39,28 @@
 </template>
 
 <script>
-import AuthService from '../services/auth.service.js'
+import { useAuthStore } from '@/stores/authStore.js'
 
 export default {
   name: 'LoginView',
   data() {
     return {
       user: {
-        email: '',
+        username: '',
         password: ''
-      }
+      },
+      errorMessage: '',
+      loading: false
     }
   },
   methods: {
     async login() {
+      this.loading = true
       try {
-        await AuthService.login(this.user)
+        const authStore = useAuthStore()
+        await authStore.login(this.user.username, this.user.password)
         this.$router.push('/home')
+        console.log('Login successful')
       } catch (error) {
         this.errorMessage =
           (error.response && error.response.data && error.response.data.message) ||

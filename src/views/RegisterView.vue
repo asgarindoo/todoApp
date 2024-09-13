@@ -51,7 +51,7 @@
 </template>
 
 <script>
-import AuthService from '../services/auth.service.js'
+import { useAuthStore } from '@/stores/authStore.js'
 
 export default {
   name: 'RegisterView',
@@ -68,7 +68,7 @@ export default {
   methods: {
     async register() {
       try {
-        await AuthService.register(this.user)
+        await useAuthStore.register(this.user)
         this.$router.push('/')
       } catch (error) {
         this.errorMessage =

@@ -6,39 +6,47 @@
     <div class="mt-4">
       <h2 class="text-2xl font-semibold mb-4">Todo List</h2>
 
+      <!-- Form untuk menambahkan Todo -->
       <TodoForm @add="addTodo" />
+
+      <!-- Daftar Todo dalam bentuk grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <TodoCard
-          v-for="item in paginatedTodos"
+          v-for="item in todoStore.paginatedTodos"
           :key="item.id"
           :todo="item"
-          @click="showModal(item)"
+          @show-modal="showDetailModal"
+          @edit-modal="showEditModal"
+          @delete="deleteTodo"
         />
       </div>
 
-      <!-- Pagination Controls -->
+      <!-- Kontrol Pagination -->
       <div class="flex flex-wrap justify-center mt-4">
         <button
-          @click="previousPage"
-          :disabled="currentPage === 1"
+          @click="todoStore.previousPage"
+          :disabled="todoStore.currentPage === 1"
           class="px-4 py-2 bg-gray-800 text-white rounded-lg mr-2"
         >
           Previous
         </button>
 
         <button
-          v-for="page in totalPages"
+          v-for="page in todoStore.totalPages"
           :key="page"
-          @click="currentPage = page"
-          :class="{ 'bg-gray-800': currentPage === page, 'bg-gray-300': currentPage !== page }"
+          @click="todoStore.currentPage = page"
+          :class="{
+            'bg-gray-800': todoStore.currentPage === page,
+            'bg-gray-500': todoStore.currentPage !== page
+          }"
           class="px-4 py-2 mx-1 rounded-lg text-white"
         >
           {{ page }}
         </button>
 
         <button
-          @click="nextPage"
-          :disabled="currentPage >= totalPages"
+          @click="todoStore.nextPage"
+          :disabled="todoStore.currentPage >= todoStore.totalPages"
           class="px-4 py-2 bg-gray-800 text-white rounded-lg ml-2"
         >
           Next
@@ -46,108 +54,96 @@
       </div>
     </div>
 
-    <!-- Modal Detail -->
-    <ModalDetail :todo="selectedTodo" :isOpen="isModalOpen" @close="closeModal" />
+    <!-- Modal Detail untuk menampilkan Todo -->
+    <ModalDetail
+      :todo="todoStore.selectedTodo"
+      :isOpen="todoStore.isDetailModalOpen"
+      @close="closeDetailModal"
+      @toggle-completed="toggleCompleted"
+    />
+
+    <!-- Edit Modal -->
+    <EditModal
+      :todo="todoStore.selectedTodo"
+      :isOpen="todoStore.isEditModalOpen"
+      @close="closeEditModal"
+      @update="updateTodo"
+    />
   </div>
 </template>
 
 <script>
-import axios from 'axios'
+import { useTodoStore } from '../stores/todoStore'
 import TodoForm from '../components/TodoForm.vue'
 import TodoCard from '../components/TodoCard.vue'
 import ModalDetail from '../components/ModalDetail.vue'
-import Cookies from 'js-cookie'
+import EditModal from '../components/EditModal.vue'
 
 export default {
   components: {
     TodoCard,
     TodoForm,
-    ModalDetail
+    ModalDetail,
+    EditModal
   },
-  data() {
+  setup() {
+    const todoStore = useTodoStore()
+
+    todoStore.loadTodos()
+
+    // Menampilkan modal dengan detail todo
+    function showDetailModal(todo) {
+      todoStore.showDetailModal(todo)
+    }
+
+    // Menampilkan modal edit todo
+    function showEditModal(todo) {
+      todoStore.showEditModal(todo)
+    }
+
+    // Menutup modal detail
+    function closeDetailModal() {
+      todoStore.closeDetailModal()
+    }
+
+    // Menutup modal edit
+    function closeEditModal() {
+      todoStore.closeEditModal()
+    }
+
+    // Menambahkan todo baru
+    function addTodo(newTodo) {
+      todoStore.createTodo(newTodo)
+    }
+
+    // Mengedit todo yang dipilih
+    function updateTodo(updatedTodo) {
+      if (todoStore.selectedTodo) {
+        todoStore.updateTodo(todoStore.selectedTodo.id, updatedTodo)
+      }
+    }
+
+    // Menghapus todo berdasarkan ID
+    function deleteTodo(id) {
+      todoStore.removeTodo(id)
+    }
+
+    // Mengubah status completed dari todo
+    function toggleCompleted(todo) {
+      todoStore.toggleCompleted(todo)
+    }
+
     return {
-      todos: [],
-      nextId: 1, // Start with 1 or adjust as needed
-      selectedTodo: null,
-      isModalOpen: false,
-      currentPage: 1,
-      todosPerPage: 6
+      todoStore,
+      showDetailModal,
+      showEditModal,
+      closeEditModal,
+      closeDetailModal,
+      addTodo,
+      updateTodo,
+      deleteTodo,
+      toggleCompleted
     }
-  },
-  computed: {
-    paginatedTodos() {
-      const start = (this.currentPage - 1) * this.todosPerPage
-      const end = start + this.todosPerPage
-      return this.todos.slice(start, end)
-    },
-    totalPages() {
-      return Math.ceil(this.todos.length / this.todosPerPage)
-    }
-  },
-  methods: {
-    async fetchTodos() {
-      try {
-        const token = Cookies.get('token')
-        if (!token) {
-          throw new Error('No token found')
-        }
-
-        console.log('Fetching todos with token:', token) // Debugging log
-
-        const response = await axios.get('https://pp5xdpnc-3500.asse.devtunnels.ms/api/todo', {
-          headers: {
-            Authorization: `Bearer ${token}` // Perbaiki format Authorization
-          },
-          withCredentials: true // Pastikan kredensial dikirim jika diperlukan
-        })
-
-        console.log('Response Data:', response.data) // Debugging log
-
-        this.todos = response.data.data
-      } catch (error) {
-        console.error('Error fetching data:', error)
-
-        if (error.response) {
-          console.error('Response data:', error.response.data)
-          console.error('Response status:', error.response.status)
-          console.error('Response headers:', error.response.headers)
-        } else if (error.request) {
-          console.error('Request data:', error.request)
-        } else {
-          console.error('Error message:', error.message)
-        }
-      }
-    },
-
-    addTodo(todo) {
-      this.todos.push({
-        id: this.nextId++,
-        title: todo.title,
-        detail: todo.detail,
-        createdAt: new Date().toLocaleDateString()
-      })
-    },
-    showModal(todo) {
-      this.selectedTodo = todo
-      this.isModalOpen = true
-    },
-    closeModal() {
-      this.isModalOpen = false
-      this.selectedTodo = null
-    },
-    previousPage() {
-      if (this.currentPage > 1) {
-        this.currentPage--
-      }
-    },
-    nextPage() {
-      if (this.currentPage < this.totalPages) {
-        this.currentPage++
-      }
-    }
-  },
-  mounted() {
-    this.fetchTodos()
   }
 }
 </script>
