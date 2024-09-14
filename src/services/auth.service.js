@@ -41,6 +41,12 @@ class AuthService {
   }
 
   register(user) {
+    console.log('User Data in Service:', {
+      name: user.name,
+      username: user.username,
+      password: user.password
+    }) // Log data untuk debugging
+
     return baseApi
       .post('/auth/register', {
         name: user.name,

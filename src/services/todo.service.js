@@ -17,10 +17,30 @@ export const fetchTodos = async () => {
       headers: getAuthHeaders(),
       withCredentials: true
     })
+
+    // // Null or empty data handling
+    // if (!response || !response.data) {
+    //   console.warn('Warning: No data received')
+    //   return []
+    // }
+
+    // // Check if the response has status false and handle the error message
+    // if (response.data.status === false) {
+    //   console.warn('Warning:', response.data.error || 'Unknown error occurred')
+    //   return []
+    // }
+
+    // // Empty array handling
+    // if (Array.isArray(response.data) && response.data.length === 0) {
+    //   console.warn('Warning: Empty data array received')
+    //   return []
+    // }
+
     return response.data
   } catch (error) {
-    console.error('Error fetching todos:', error)
-    throw error
+    // Only log the error without throwing it to avoid breaking the application flow
+    // console.error('Error fetching todos:', error.message || error)
+    return []
   }
 }
 
@@ -52,6 +72,8 @@ export const addTodo = async (todo) => {
 
 export const editTodo = async (id, updatedTodo) => {
   try {
+    console.log('Updating todo with ID:', id, 'Payload:', updatedTodo)
+
     const response = await baseApi.put(`${API_URL}/${id}`, updatedTodo, {
       headers: getAuthHeaders(),
       withCredentials: true
