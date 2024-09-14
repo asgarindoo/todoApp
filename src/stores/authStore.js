@@ -24,11 +24,13 @@ export const useAuthStore = defineStore('auth', {
       this.user = null
       this.token = null
     },
-    async register(name, username, password) {
+    async register(user) {
+      console.log('User Data in Store:', user)
       try {
-        await AuthService.register({ name, username, password })
+        const response = await AuthService.register(user)
+        return response
       } catch (error) {
-        console.error('Registration Error:', error)
+        console.error('Registration Error in Store:', error)
         throw error
       }
     },
