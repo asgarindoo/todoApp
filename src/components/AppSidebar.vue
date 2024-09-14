@@ -42,7 +42,7 @@ import AuthService from '@/service/auth.service';
         <li>
           <a
             @click.prevent="logout"
-            class="flex items-center px-4 py-2 mt-96 hover:bg-gray-700"
+            class="flex items-center px-4 py-2 mt-96 hover:bg-gray-700 cursor-pointer"
             active-class="bg-gray-700"
           >
             <i class="fas fa-sign-out-alt mr-4 ml-6"></i>
@@ -56,6 +56,7 @@ import AuthService from '@/service/auth.service';
 
 <script>
 import { useAuthStore } from '../stores/authStore.js'
+import Swal from 'sweetalert2'
 
 export default {
   name: 'AppSidebar',
@@ -66,8 +67,25 @@ export default {
   },
   methods: {
     async logout() {
-      await useAuthStore.logout()
-      this.$router.push('/')
+      const authStore = useAuthStore()
+
+      try {
+        await authStore.logout() // Pastikan logout di authStore juga adalah async
+        await Swal.fire({
+          position: 'top-end',
+          icon: 'success',
+          title: 'Logged out successfully.',
+          showConfirmButton: false
+        })
+        this.$router.push({ name: 'Login' })
+      } catch (error) {
+        console.error('Logout error:', error)
+        await Swal.fire({
+          icon: 'error',
+          title: 'Oops...',
+          text: 'Something went wrong during logout.'
+        })
+      }
     },
     toggleSidebar() {
       this.isOpen = !this.isOpen

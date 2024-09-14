@@ -6,18 +6,18 @@
         <input
           type="text"
           v-model="user.username"
-          placeholder="Email"
-          class="border border-gray-300 rounded-md px-3 py-2 w-full mb-2 focus:outline-none focus:ring focus:border-slate-800"
+          placeholder="Username"
+          class="border border-gray-300 rounded-sm px-3 py-2 w-full mb-2 focus:outline-none focus:border-slate-800"
         />
         <input
-          type="password"
+          :type="showPassword ? 'text' : 'password'"
           v-model="user.password"
           placeholder="Password"
-          class="border border-gray-300 rounded-md px-3 py-2 w-full mb-2 focus:outline-none focus:ring focus:border-slate-800"
+          class="border border-gray-300 rounded-sm px-3 py-2 w-full mb-2 focus:outline-none focus:border-slate-800"
         />
         <button
           type="submit"
-          class="bg-slate-800 text-white rounded-md px-4 py-2 w-full hover:bg-slate-900 focus:outline-none"
+          class="bg-slate-800 text-white rounded-sm px-4 py-2 w-full hover:bg-slate-900 focus:outline-none"
         >
           Login / Sign In
         </button>
@@ -30,7 +30,7 @@
       <p class="mb-2">Login with Google:</p>
       <button
         @click="loginWithGoogle"
-        class="bg-slate-800 text-white rounded-md px-4 py-2 w-full hover:bg-slate-900 focus:outline-none"
+        class="bg-slate-800 text-white rounded-sm px-4 py-2 w-full hover:bg-slate-900 focus:outline-none"
       >
         Login with Google
       </button>
@@ -40,6 +40,7 @@
 
 <script>
 import { useAuthStore } from '@/stores/authStore.js'
+import Swal from 'sweetalert2'
 
 export default {
   name: 'LoginView',
@@ -60,15 +61,38 @@ export default {
         const authStore = useAuthStore()
         await authStore.login(this.user.username, this.user.password)
         this.$router.push('/home')
-        console.log('Login successful')
+
+        // Menampilkan alert sukses
+        Swal.fire({
+          position: 'top-end',
+          icon: 'success',
+          title: 'Login successful',
+          showConfirmButton: false,
+          timer: 1500
+        })
       } catch (error) {
         this.errorMessage =
           (error.response && error.response.data && error.response.data.message) ||
           error.message ||
           error.toString()
+
+        // Menampilkan alert kesalahan
+        Swal.fire({
+          icon: 'error',
+          title: 'Login failed',
+          text: this.errorMessage,
+          showConfirmButton: true
+        })
       } finally {
         this.loading = false
       }
+    },
+    loginWithGoogle() {
+      Swal.fire({
+        icon: 'info',
+        title: 'Login with Google is not implemented yet',
+        showConfirmButton: false
+      })
     }
   }
 }

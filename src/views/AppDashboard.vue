@@ -120,6 +120,7 @@ export default {
     function updateTodo(updatedTodo) {
       if (todoStore.selectedTodo) {
         todoStore.updateTodo(todoStore.selectedTodo.id, updatedTodo)
+        closeEditModal()
       }
     }
 
