@@ -18,9 +18,6 @@ export default {
 </script>
 
 <style scoped>
-.fixed {
-  position: fixed;
-}
 .ml-64 {
   margin-left: 16rem; /* Sesuaikan dengan lebar sidebar-mu */
 }
